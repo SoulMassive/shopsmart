@@ -1,23 +1,37 @@
 const Product = require('../models/Product.model');
+const Brand = require('../models/Brand.model');
 
-// @desc    Get all products (with optional search & category filter)
+// @desc    Get all products (with optional search & brand/category filter)
 // @route   GET /api/products
 const getProducts = async (req, res) => {
     try {
         const { category, search, page = 1, limit = 12 } = req.query;
-        const query = { isActive: true };
 
-        if (category) query.category = category;
+        // Explicit filters — don't depend on pre-find hooks
+        const query = { isActive: true, deletedAt: null };
+
+        if (category) {
+            const brand = await Brand.findOne({ name: category, deletedAt: null });
+            if (brand) {
+                query.brandId = brand._id;
+            } else {
+                return res.json({ products: [], total: 0, page: Number(page), pages: 0 });
+            }
+        }
+
         if (search) query.name = { $regex: search, $options: 'i' };
 
         const total = await Product.countDocuments(query);
         const products = await Product.find(query)
+            .populate('brandId', 'name slug')
             .skip((page - 1) * limit)
             .limit(Number(limit))
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .allowDiskUse(true);
 
         res.json({ products, total, page: Number(page), pages: Math.ceil(total / limit) });
     } catch (error) {
+        console.error('[getProducts error]', error.message);
         res.status(500).json({ message: error.message });
     }
 };

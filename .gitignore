@@ -12,18 +12,14 @@ out/
 
 # ── Environment variables — NEVER commit real secrets ─────────────────────────
 .env
-.env.local
-.env.development
-.env.development.local
-.env.test
-.env.test.local
-.env.production
-.env.production.local
+.env.*
+!.env.example
+!.env.template
 backend/.env
-backend/.env.local
-backend/.env.production
+backend/.env.*
+!backend/.env.example
 
-# ── Logs ─────────────────────────────────────────────────────────────────────
+# ── Logs ──────────────────────────────────────────────────────────────────────
 logs/
 *.log
 npm-debug.log*
@@ -31,6 +27,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# ── File Uploads & Local Data ─────────────────────────────────────────────────
+uploads/
+backend/uploads/
 
 # ── OS generated files ────────────────────────────────────────────────────────
 .DS_Store
@@ -68,7 +68,7 @@ vite.config.ts.timestamp-*
 coverage/
 .nyc_output/
 
-# ── Misc ─────────────────────────────────────────────────────────────────────
+# ── Misc ──────────────────────────────────────────────────────────────────────
 .cache/
 .parcel-cache/
 .turbo/

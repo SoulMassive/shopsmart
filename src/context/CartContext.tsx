@@ -81,7 +81,14 @@ function loadFromStorage(): CartState {
 }
 
 function saveToStorage(state: CartState) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    try {
+        // Strip base64 images before persisting — they can be several MB each
+        // and will blow past the 5 MB localStorage quota.
+        const slim = state.items.map(({ image: _image, ...rest }) => rest);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(slim));
+    } catch {
+        // Quota exceeded — silently swallow; cart still works in-memory
+    }
 }
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -94,6 +101,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         saveToStorage(state);
     }, [state]);
+
+    // Clear cart on logout
+    useEffect(() => {
+        const handleLogout = () => {
+            dispatch({ type: "CLEAR_CART" });
+        };
+        window.addEventListener("auth-logout", handleLogout);
+        return () => window.removeEventListener("auth-logout", handleLogout);
+    }, []);
 
     const totalItems = state.items.reduce((sum, i) => sum + i.quantity, 0);
     const totalPrice = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);

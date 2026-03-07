@@ -47,8 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("shopsmart_cart");
         setToken(null);
         setUser(null);
+        window.dispatchEvent(new Event("auth-logout"));
     };
 
     return (

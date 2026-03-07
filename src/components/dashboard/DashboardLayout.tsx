@@ -23,9 +23,9 @@ const DashboardLayout = ({ children, role }: DashboardLayoutProps) => {
             <SidebarTrigger className="shrink-0" />
             <h2 className="text-sm font-semibold text-foreground truncate flex-1">{role.title}</h2>
 
-            {/* Cart icon — only shown in retail context */}
+            {/* Cart icon — routes to role-appropriate cart */}
             <button
-              onClick={() => navigate("/retail/cart")}
+              onClick={() => navigate(role.basePath === "/admin" ? "/admin/cart" : "/retail/cart")}
               className="relative h-9 w-9 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
               aria-label="Cart"
             >

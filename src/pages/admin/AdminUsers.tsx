@@ -6,6 +6,8 @@ import { Plus, Loader2, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
+import { useState } from "react";
+import AddUserModal from "@/components/admin/AddUserModal";
 
 const roleLabel: Record<string, string> = {
   admin: "Admin",
@@ -16,8 +18,9 @@ const roleLabel: Record<string, string> = {
 
 const AdminUsers = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const { data } = await api.get("/users");
@@ -39,10 +42,16 @@ const AdminUsers = () => {
             <h1 className="text-2xl font-bold text-foreground">User Management</h1>
             <p className="text-sm text-muted-foreground">Manage executives and outlet accounts</p>
           </div>
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" onClick={() => setIsModalOpen(true)}>
             <Plus size={16} /> Add User
           </Button>
         </div>
+
+        <AddUserModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          onSuccess={refetch}
+        />
 
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -73,8 +82,8 @@ const AdminUsers = () => {
                       <tr
                         key={user._id}
                         className={`border-b border-border last:border-0 transition-colors ${isOutlet
-                            ? "cursor-pointer hover:bg-primary/5"
-                            : "hover:bg-muted/20"
+                          ? "cursor-pointer hover:bg-primary/5"
+                          : "hover:bg-muted/20"
                           }`}
                         onClick={() => handleRowClick(user)}
                       >
@@ -83,10 +92,10 @@ const AdminUsers = () => {
                         <td className="px-5 py-3">
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isOutlet
-                                ? "bg-green-100 text-green-700"
-                                : user.role === "admin"
-                                  ? "bg-purple-100 text-purple-700"
-                                  : "bg-gray-100 text-gray-600"
+                              ? "bg-green-100 text-green-700"
+                              : user.role === "admin"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-gray-100 text-gray-600"
                               }`}
                           >
                             {roleLabel[user.role] || user.role}

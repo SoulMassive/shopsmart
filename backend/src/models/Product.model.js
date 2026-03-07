@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
             trim: true,
         },
         description: { type: String, trim: true },
+        ingredients: { type: String, trim: true },
 
         // Now proper ObjectId references — replaces hardcoded strings
         brandId: {
@@ -25,7 +26,7 @@ const productSchema = new mongoose.Schema(
         categoryId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Category',
-            required: [true, 'Category is required'],
+            default: null,
         },
 
         sku: {
@@ -72,10 +73,11 @@ const productSchema = new mongoose.Schema(
 );
 
 // ── Indexes ──────────────────────────────────────────────────────────────────
-// Note: sku and slug indexes created automatically by unique: true on those fields.
+// Note: slug index is created automatically by unique: true
 productSchema.index({ brandId: 1 });
 productSchema.index({ categoryId: 1 });
 productSchema.index({ isActive: 1, isFeatured: 1 });
+productSchema.index({ createdAt: -1 }); // Prevents "Sort exceeded memory limit" when fetching products
 productSchema.index({ totalSold: -1 }); // bestsellers
 productSchema.index({ price: 1 }); // price range queries
 productSchema.index({ tags: 1 });
@@ -83,7 +85,7 @@ productSchema.index({ name: 'text', description: 'text', tags: 'text' }); // ful
 productSchema.index({ deletedAt: 1 });
 
 productSchema.pre(/^find/, function (next) {
-    if (!this._conditions.deletedAt) this.where({ deletedAt: null });
+    if (!this._conditions?.deletedAt) this.where({ deletedAt: null });
     next();
 });
 

@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 // Auth pages
 import Login from "./pages/auth/Login";
@@ -23,6 +24,7 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminTracking from "./pages/admin/AdminTracking";
 import AdminReports from "./pages/admin/AdminReports";
 import UserProfile from "./pages/admin/UserProfile";
+import AdminCart from "./pages/admin/AdminCart";
 
 // Retail pages
 import RetailDashboard from "./pages/retail/RetailDashboard";
@@ -48,8 +50,9 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                {/* Public category pages with dynamic theming */}
+                {/* Public category & product detail pages */}
                 <Route path="/category/:brand" element={<CategoryPage />} />
+                <Route path="/product/:id" element={<ProductDetailPage />} />
 
                 {/* Admin */}
                 <Route
@@ -64,6 +67,7 @@ const App = () => (
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="tracking" element={<AdminTracking />} />
                         <Route path="reports" element={<AdminReports />} />
+                        <Route path="cart" element={<AdminCart />} />
                       </Routes>
                     </ProtectedRoute>
                   }

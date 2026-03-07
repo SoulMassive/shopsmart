@@ -7,16 +7,7 @@ require('dotenv').config();
 const app = express();
 
 // Connect to MongoDB
-connectDB().then(async () => {
-    // TEMPORARY: Wipe all products on startup once
-    const mongoose = require('mongoose');
-    try {
-        const result = await mongoose.connection.collection('products').deleteMany({});
-        console.log(`🗑️  Successfully wiped ${result.deletedCount} products from DB.`);
-    } catch (e) {
-        console.error('❌ Wipe failed:', e.message);
-    }
-});
+connectDB();
 
 // Middleware
 const allowedOrigins = [
@@ -37,9 +28,13 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '256mb' }));
+app.use(express.urlencoded({ extended: false, limit: '256mb' }));
 app.use(morgan('dev'));
+
+// Serve uploaded images statically
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
@@ -47,6 +42,7 @@ app.use('/api/products', require('./routes/product.routes'));
 app.use('/api/orders', require('./routes/order.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/outlets', require('./routes/outlet.routes'));
+app.use('/api/admin/analytics', require('./routes/analytics.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 
 // Health check endpoint

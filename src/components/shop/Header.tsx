@@ -83,13 +83,14 @@ const Header = () => {
                             </Link>
                         </>
                     )}
+                    {/* Cart icon — routes to role-appropriate cart */}
                     <button
-                        onClick={() => navigate("/retail/cart")}
+                        onClick={() => navigate(user?.role === "admin" ? "/admin/cart" : "/retail/cart")}
                         className="relative flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
                         aria-label="Cart"
                     >
                         <ShoppingCart className="h-5 w-5" />
-                        {totalItems > 0 && (
+                        {user && totalItems > 0 && (
                             <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                                 {totalItems > 99 ? "99+" : totalItems}
                             </span>

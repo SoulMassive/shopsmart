@@ -33,7 +33,7 @@ const brandSchema = new mongoose.Schema(
 brandSchema.index({ slug: 1 }, { unique: true });
 brandSchema.index({ isActive: 1 });
 brandSchema.pre(/^find/, function (next) {
-    if (!this._conditions.deletedAt) this.where({ deletedAt: null });
+    if (!this._conditions?.deletedAt) this.where({ deletedAt: null });
     next();
 });
 
