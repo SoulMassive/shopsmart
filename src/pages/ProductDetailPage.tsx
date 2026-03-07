@@ -30,7 +30,14 @@ const ProductDetailPage = () => {
     const handleIncrease = () => {
         if (!product) return;
         if (qty === 0) {
-            addToCart({ productId: product._id, name: product.name, price: product.price, image: product.images?.[0] });
+            addToCart({ 
+                productId: product._id, 
+                name: product.name, 
+                price: product.discountedPrice, 
+                image: product.images?.[0],
+                weight: product.weight,
+                weightInKg: product.weightInKg,
+            });
             toast.success(`${product.name} added to cart!`);
         } else {
             increaseQuantity(product._id);
@@ -104,6 +111,12 @@ const ProductDetailPage = () => {
                         ) : (
                             <span className="text-[100px]">🌾</span>
                         )}
+                        {/* Discount Badge */}
+                        {product.discountPercentage > 0 && (
+                            <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-sm px-3 py-1.5 rounded shadow-sm font-bold tracking-wide">
+                                {product.discountPercentage}% OFF
+                            </div>
+                        )}
                     </div>
 
                     {/* Details */}
@@ -142,20 +155,35 @@ const ProductDetailPage = () => {
                         </div>
 
                         {/* Ingredients */}
-                        {product.ingredients && (
-                            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                                    <FlaskConical className="h-3.5 w-3.5" /> Ingredients
-                                </p>
-                                <p className="text-sm text-gray-700">{product.ingredients}</p>
-                            </div>
-                        )}
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                                <FlaskConical className="h-3.5 w-3.5" /> Ingredients
+                            </p>
+                            <p className="text-sm text-gray-700">{product.ingredients || "—"}</p>
+                        </div>
+
+                        {/* Storage Conditions */}
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                                <Package className="h-3.5 w-3.5" /> Storage Conditions
+                            </p>
+                            <p className="text-sm text-gray-700">{product.storageConditions || "—"}</p>
+                        </div>
+
+                        {/* Health Benefits */}
+                        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+                                <Tag className="h-3.5 w-3.5" /> Health Benefits
+                            </p>
+                            <p className="text-sm text-gray-700">{product.healthBenefits || "—"}</p>
+                        </div>
 
                         {/* Price + Qty Controls */}
                         <div className="mt-auto flex items-center justify-between gap-4 pt-4 border-t border-gray-100">
-                            <span className="text-3xl font-bold text-gray-900">
-                                ₹{product.price?.toLocaleString()}
-                            </span>
+                            <div className="flex flex-col">
+                                <span className="text-gray-400 line-through text-sm font-medium">₹{product.originalPrice?.toLocaleString()}</span>
+                                <span className="text-3xl font-bold text-green-600 leading-none mt-1">₹{product.discountedPrice?.toLocaleString()}</span>
+                            </div>
 
                             {product.stock === 0 ? (
                                 <span className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-400 bg-gray-100">

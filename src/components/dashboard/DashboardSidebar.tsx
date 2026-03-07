@@ -14,6 +14,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export interface NavItem {
   title: string;
@@ -36,6 +37,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <Sidebar collapsible="icon">
@@ -80,7 +82,13 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
           </button>
         </SidebarMenuButton>
         <SidebarMenuButton asChild>
-          <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full">
+          <button 
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
+          >
             <LogOut className="h-4 w-4 shrink-0" />
             {!collapsed && <span>Logout</span>}
           </button>

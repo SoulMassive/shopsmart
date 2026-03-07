@@ -73,7 +73,7 @@ const AdminCart = () => {
                                 {items.map((item) => (
                                     <div key={item.productId} className="flex justify-between text-muted-foreground">
                                         <span>{item.name} × {item.quantity}</span>
-                                        <span>₹{(item.price * item.quantity).toLocaleString()}</span>
+                                        <span>₹{((item.price || 0) * item.quantity).toLocaleString()}</span>
                                     </div>
                                 ))}
                             </div>

@@ -63,8 +63,9 @@ export function RegisterForm() {
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
-        if (!formData.email.trim()) newErrors.email = "Email is required";
-        else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email format";
+        if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = "Invalid email format";
+        }
         if (!formData.contactNumber.trim()) newErrors.contactNumber = "Contact number is required";
         if (!formData.shopName.trim()) newErrors.shopName = "Shop name is required";
         if (!formData.password.trim()) newErrors.password = "Password is required";
@@ -143,7 +144,7 @@ export function RegisterForm() {
                 {/* Row 1: Name + Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InputField id="fullName" label="Full Name" placeholder="John Doe" value={formData.fullName} onChange={handleChange} error={errors.fullName} disabled={isLoading} />
-                    <InputField id="email" type="email" label="Email" placeholder="name@example.com" value={formData.email} onChange={handleChange} error={errors.email} disabled={isLoading} />
+                    <InputField id="email" type="email" label="Email (Optional)" placeholder="name@example.com" value={formData.email} onChange={handleChange} error={errors.email} disabled={isLoading} />
                 </div>
 
                 {/* Row 2: Phone + Shop Name */}

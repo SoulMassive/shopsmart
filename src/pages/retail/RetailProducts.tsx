@@ -57,13 +57,22 @@ const RetailProducts = () => {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {(data || []).map((p: any) => (
-              <div key={p._id} className="bg-card rounded-2xl border border-border p-5 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5">
-                <div className="flex items-start justify-between mb-3">
+              <div key={p._id} className="bg-card rounded-2xl border border-border p-5 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5 relative overflow-hidden">
+                {/* Discount Badge */}
+                {p.discountPercentage > 0 && (
+                  <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded shadow-sm font-bold tracking-wide">
+                      {p.discountPercentage}% OFF
+                  </div>
+                )}
+                <div className="flex items-start justify-between mb-3 mt-4">
                   <div>
                     <h3 className="font-semibold text-card-foreground">{p.name}</h3>
                     <p className="text-xs text-muted-foreground">{p.category}</p>
                   </div>
-                  <span className="text-lg font-bold text-primary">₹{p.price}</span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-gray-400 line-through text-xs">₹{p.originalPrice}</span>
+                    <span className="text-lg font-bold text-green-600 leading-none mt-0.5">₹{p.discountedPrice}</span>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">Stock: {p.stock} units</p>
                 <Button
@@ -73,9 +82,11 @@ const RetailProducts = () => {
                     addToCart({
                       productId: p._id,
                       name: p.name,
-                      price: p.price,
+                      price: p.discountedPrice,
                       image: p.images?.[0] || "",
                       unit: p.unit || "piece",
+                      weight: p.weight,
+                      weightInKg: p.weightInKg,
                     });
                     const already = items.some((i) => i.productId === p._id);
                     toast.success(

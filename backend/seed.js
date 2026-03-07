@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema(
 );
 const User = mongoose.model('User', UserSchema);
 const ProductSchema = new mongoose.Schema(
-    { name: String, category: String, brand: String, price: Number, stock: Number, isActive: Boolean },
+    { name: String, category: String, brand: String, originalPrice: Number, stock: Number, isActive: Boolean },
     { timestamps: true }
 );
 const Product = mongoose.model('Product', ProductSchema);

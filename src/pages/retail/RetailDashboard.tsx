@@ -14,7 +14,7 @@ const RetailDashboard = () => {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["myOrders"],
     queryFn: async () => {
-      const { data } = await api.get("/orders/myorders");
+      const { data } = await api.get("/orders/my");
       return data || [];
     },
   });

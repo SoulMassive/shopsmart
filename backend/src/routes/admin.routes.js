@@ -47,17 +47,29 @@ router.get('/products', protect, adminOnly, async (req, res) => {
 // imageData is an optional base64 data-URL string sent in JSON body
 router.post('/products', protect, adminOnly, async (req, res) => {
     try {
-        const { name, brandId, categoryId, description, ingredients, weight, price, stock, imageData } = req.body;
+        const { 
+            name, brandId, categoryId, description, ingredients, 
+            storageConditions, healthBenefits, weight, 
+            originalPrice, discountPercentage, stock, imageData 
+        } = req.body;
 
         const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') + '-' + Date.now();
         const sku = 'SKU-' + name.toUpperCase().replace(/\s+/g, '').slice(0, 6) + '-' + Date.now().toString().slice(-5);
 
         const images = imageData ? [imageData] : [];
 
+        // Auto calculate discount
+        const originalPriceNum = parseFloat(originalPrice);
+        const discountNum = discountPercentage !== undefined ? parseFloat(discountPercentage) : 33.33;
+        const discountedPriceNum = Math.round(originalPriceNum - (originalPriceNum * discountNum / 100));
+
         const product = await Product.create({
-            name, slug, sku, brandId, categoryId, description, ingredients,
+            name, slug, sku, brandId, categoryId, description, 
+            ingredients, storageConditions, healthBenefits,
             weight: weight ? parseInt(weight) : undefined,
-            price: parseFloat(price),
+            originalPrice: originalPriceNum,
+            discountPercentage: discountNum,
+            discountedPrice: discountedPriceNum,
             stock: parseInt(stock) || 0,
             images,
             createdBy: req.user._id,
@@ -73,10 +85,37 @@ router.post('/products', protect, adminOnly, async (req, res) => {
 // @route PATCH /api/admin/products/:id
 router.patch('/products/:id', protect, adminOnly, async (req, res) => {
     try {
-        const { name, price, stock, description, ingredients, isActive } = req.body;
+        console.log('[PATCH /admin/products] body:', req.body);
+        const { 
+            name, originalPrice, discountPercentage, stock, 
+            description, ingredients, storageConditions, 
+            healthBenefits, isActive 
+        } = req.body;
+        
+        const updatePayload = { 
+            name, 
+            stock: stock !== undefined ? parseInt(stock) : undefined,
+            description, 
+            ingredients, 
+            storageConditions, 
+            healthBenefits, 
+            isActive, 
+            updatedBy: req.user._id 
+        };
+        
+        if (originalPrice !== undefined) {
+            const op = parseFloat(originalPrice);
+            updatePayload.originalPrice = op;
+            const dPct = discountPercentage !== undefined ? parseFloat(discountPercentage) : 33.33;
+            updatePayload.discountPercentage = dPct;
+            updatePayload.discountedPrice = Math.round(op - (op * dPct / 100));
+        }
+
+        console.log('[PATCH /admin/products] payload:', updatePayload);
+
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { name, price, stock, description, ingredients, isActive, updatedBy: req.user._id },
+            updatePayload,
             { new: true, runValidators: true }
         );
         if (!product) return res.status(404).json({ message: 'Product not found' });

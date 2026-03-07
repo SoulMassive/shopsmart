@@ -21,7 +21,7 @@ const orderItemSchema = new mongoose.Schema(
         categoryId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Category',
-            required: true,
+            default: null,
         },
 
         // Price snapshot — preserves the exact values at time of order
@@ -30,6 +30,8 @@ const orderItemSchema = new mongoose.Schema(
         image: { type: String },
         unitPrice: { type: Number, required: true, min: 0 },
         unit: { type: String },
+        brandName: { type: String },
+        weightInKg: { type: Number, default: 0 },
 
         quantity: { type: Number, required: true, min: 1, max: 10000 },
         discountAmount: { type: Number, default: 0 },

@@ -8,14 +8,15 @@ interface CartItemProps {
 
 export function CartItem({ item }: CartItemProps) {
     const { increaseQuantity, decreaseQuantity, removeFromCart } = useCart();
-    const subtotal = item.price * item.quantity;
+    const itemPrice = item.price || 0;
+    const subtotal = itemPrice * item.quantity;
 
     return (
         <div className="flex items-center gap-4 py-4 border-b border-border last:border-0">
             {/* Product image */}
             <div className="h-16 w-16 rounded-xl bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                 {item.image ? (
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    <img src={item.image} alt={item.name} className="h-full w-full object-contain p-2" />
                 ) : (
                     <span className="text-2xl">🛍️</span>
                 )}
@@ -24,7 +25,7 @@ export function CartItem({ item }: CartItemProps) {
             {/* Name + unit */}
             <div className="flex-1 min-w-0">
                 <p className="font-semibold text-card-foreground truncate">{item.name}</p>
-                <p className="text-xs text-muted-foreground">₹{item.price.toLocaleString()} {item.unit ? `/ ${item.unit}` : "each"}</p>
+                <p className="text-xs text-muted-foreground">₹{itemPrice.toLocaleString()} {item.unit ? `/ ${item.unit}` : "each"}</p>
             </div>
 
             {/* Qty controls */}

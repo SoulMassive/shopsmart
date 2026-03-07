@@ -11,11 +11,12 @@ const userSchema = new mongoose.Schema(
         },
         email: {
             type: String,
-            required: [true, 'Email is required'],
             unique: true,
+            sparse: true,
             lowercase: true,
             trim: true,
             match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
+            set: v => v === "" ? undefined : v,
         },
         password: {
             type: String,
@@ -44,6 +45,7 @@ const userSchema = new mongoose.Schema(
 
         isActive: { type: Boolean, default: true },
         deletedAt: { type: Date, default: null },
+        hasUsedFirstOrderOffer: { type: Boolean, default: false },
 
         // Session / security
         lastLoginAt: { type: Date },

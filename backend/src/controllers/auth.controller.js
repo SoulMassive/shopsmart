@@ -11,15 +11,18 @@ const register = async (req, res) => {
     try {
         const { name, email, password, phone, shopName, gstNumber, address, location } = req.body;
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists with this email' });
+        // Ensure email uniqueness check only if email is provided
+        if (email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: 'User already exists with this email' });
+            }
         }
 
         // Create the user account
         const user = await User.create({
             name,
-            email,
+            email: email || undefined,
             password,
             phone: phone || undefined,
             role: 'retailOutlet',
@@ -65,6 +68,7 @@ const register = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            hasUsedFirstOrderOffer: user.hasUsedFirstOrderOffer,
             token: generateToken(user._id),
         });
     } catch (error) {
@@ -77,11 +81,21 @@ const register = async (req, res) => {
 // @route   POST /api/auth/login
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, identifier, password } = req.body;
+        const loginId = identifier || email;
 
-        const user = await User.findOne({ email }).select('+password');
+        if (!loginId || !password) {
+            return res.status(400).json({ message: 'Please provide email/phone and password' });
+        }
+
+        const user = await User.findOne({
+            $or: [
+                { email: loginId },
+                { phone: loginId }
+            ]
+        }).select('+password');
         if (!user || !(await user.comparePassword(password))) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         res.json({
@@ -89,6 +103,7 @@ const login = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            hasUsedFirstOrderOffer: user.hasUsedFirstOrderOffer,
             token: generateToken(user._id),
         });
     } catch (error) {

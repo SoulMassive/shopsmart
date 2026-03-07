@@ -2,15 +2,24 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 
 const Signup = () => {
     return (
         <div
-            className="min-h-screen flex items-center justify-center p-4 py-6"
+            className="min-h-screen flex items-center justify-center p-4 py-6 relative"
             style={{
                 background: "linear-gradient(135deg, #e8f5e9, #f1f8e9)",
             }}
         >
+            <Link 
+                to="/" 
+                className="absolute top-6 left-6 flex items-center gap-2 text-green-700 hover:text-green-800 bg-white/60 hover:bg-white/90 px-4 py-2 rounded-full backdrop-blur-md transition-all shadow-sm font-medium z-10"
+            >
+                <ArrowLeft size={18} />
+                <span>Back to Home</span>
+            </Link>
+
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}

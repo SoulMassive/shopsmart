@@ -11,9 +11,13 @@ interface ProductCardProps {
         _id: string;
         name: string;
         price: number;
+        originalPrice: number;
+        discountedPrice: number;
+        discountPercentage: number;
         category?: string;
         stock: number;
         weight?: number;
+        weightInKg?: number;
         images?: string[];
     };
 }
@@ -29,8 +33,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
         addToCart({
             productId: product._id,
             name: product.name,
-            price: product.price,
+            price: product.discountedPrice,
             image: product.images?.[0],
+            weight: product.weight,
+            weightInKg: product.weightInKg,
         });
         toast.success(`${product.name} added to cart!`);
         setQty(1);
@@ -57,14 +63,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
         >
             {/* Product image */}
             <div
-                className="w-full h-36 flex items-center justify-center overflow-hidden"
+                className="w-full h-36 flex items-center justify-center overflow-hidden relative"
                 style={{ background: theme.bgLight }}
             >
+                {/* Discount Badge */}
+                {product.discountPercentage > 0 && (
+                    <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded shadow-sm font-bold tracking-wide">
+                        {product.discountPercentage}% OFF
+                    </div>
+                )}
                 {product.images?.[0] ? (
                     <img
                         src={product.images[0]}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-2"
                     />
                 ) : (
                     <span className="text-5xl">🌾</span>
@@ -84,7 +96,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">
-                    <span className="text-base font-bold text-gray-900">₹{product.price.toLocaleString()}</span>
+                    <div className="flex flex-col">
+                        <span className="text-gray-400 line-through text-xs font-medium">₹{product.originalPrice?.toLocaleString()}</span>
+                        <span className="text-lg font-bold text-green-600 leading-none mt-0.5">₹{product.discountedPrice?.toLocaleString()}</span>
+                    </div>
                     <span className="text-[11px] text-gray-400">{product.stock} units</span>
                 </div>
 

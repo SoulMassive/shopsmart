@@ -39,10 +39,13 @@ const EditProductModal = ({
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     name: product.name || "",
-    price: String(product.price || ""),
+    originalPrice: String(product.originalPrice || ""),
+    discountPercentage: String(product.discountPercentage || "33.33"),
     stock: String(product.stock || ""),
     description: product.description || "",
     ingredients: product.ingredients || "",
+    storageConditions: product.storageConditions || "",
+    healthBenefits: product.healthBenefits || "",
   });
 
   const mutation = useMutation({
@@ -50,10 +53,13 @@ const EditProductModal = ({
       return (
         await api.patch(`/admin/products/${product._id}`, {
           name: form.name,
-          price: parseFloat(form.price),
+          originalPrice: parseFloat(form.originalPrice),
+          discountPercentage: parseFloat(form.discountPercentage),
           stock: parseInt(form.stock),
           description: form.description,
           ingredients: form.ingredients,
+          storageConditions: form.storageConditions,
+          healthBenefits: form.healthBenefits,
         })
       ).data;
     },
@@ -78,11 +84,16 @@ const EditProductModal = ({
             <Label>Product Name</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label>Price (₹)</Label>
-              <Input type="number" min="0.01" step="0.01" value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })} />
+              <Label>Original Price (₹)</Label>
+              <Input type="number" min="0.01" step="0.01" value={form.originalPrice}
+                onChange={(e) => setForm({ ...form, originalPrice: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Discount %</Label>
+              <Input type="number" min="0" max="100" step="0.1" value={form.discountPercentage}
+                onChange={(e) => setForm({ ...form, discountPercentage: e.target.value })} />
             </div>
             <div className="space-y-1.5">
               <Label>Stock</Label>
@@ -99,6 +110,16 @@ const EditProductModal = ({
             <Label>Ingredients</Label>
             <Input value={form.ingredients} placeholder="e.g. Ragi millet, salt..."
               onChange={(e) => setForm({ ...form, ingredients: e.target.value })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Storage Conditions</Label>
+            <Input value={form.storageConditions} placeholder="e.g. Store in a cool, dry place"
+              onChange={(e) => setForm({ ...form, storageConditions: e.target.value })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Health Benefits</Label>
+            <Input value={form.healthBenefits} placeholder="e.g. Rich in fiber, gluten-free"
+              onChange={(e) => setForm({ ...form, healthBenefits: e.target.value })} />
           </div>
         </div>
         <DialogFooter className="gap-2">
@@ -198,7 +219,9 @@ const AdminProducts = () => {
                     <th className="px-5 py-3 text-left font-medium text-muted-foreground">Product</th>
                     <th className="px-5 py-3 text-left font-medium text-muted-foreground">Brand</th>
                     <th className="px-5 py-3 text-left font-medium text-muted-foreground">Weight</th>
-                    <th className="px-5 py-3 text-left font-medium text-muted-foreground">Price</th>
+                    <th className="px-5 py-3 text-left font-medium text-muted-foreground">Original Price</th>
+                    <th className="px-5 py-3 text-left font-medium text-muted-foreground">Discount Price</th>
+                    <th className="px-5 py-3 text-left font-medium text-muted-foreground">Discount %</th>
                     <th className="px-5 py-3 text-left font-medium text-muted-foreground">Stock</th>
                     <th className="px-5 py-3 text-left font-medium text-muted-foreground">Status</th>
                     <th className="px-5 py-3 text-left font-medium text-muted-foreground">Actions</th>
@@ -232,7 +255,9 @@ const AdminProducts = () => {
                               : `${product.weight}g`
                             : "—"}
                         </td>
-                        <td className="px-5 py-3 font-medium">₹{product.price?.toLocaleString()}</td>
+                        <td className="px-5 py-3 font-medium text-gray-500 line-through">₹{product.originalPrice?.toLocaleString()}</td>
+                        <td className="px-5 py-3 font-bold text-green-600">₹{product.discountedPrice?.toLocaleString()}</td>
+                        <td className="px-5 py-3 text-muted-foreground">{product.discountPercentage}%</td>
                         <td className="px-5 py-3 text-muted-foreground">{product.stock}</td>
                         <td className="px-5 py-3">
                           <StatusBadge status={product.isActive ? "Active" : "Inactive"} />

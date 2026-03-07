@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { ArrowLeft } from "lucide-react";
 
 const Login = () => {
-    const [email, setEmail] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
@@ -23,7 +24,7 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const { data } = await api.post("/auth/login", { email, password });
+            const { data } = await api.post("/auth/login", { identifier, password });
             login(data.token, data);
             toast.success("Welcome back!");
             const redirectPath = data.role === "admin" ? "/admin" : "/retail";
@@ -36,7 +37,15 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-secondary/30 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-secondary/30 px-4 relative">
+            <Link 
+                to="/" 
+                className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground bg-background/50 hover:bg-background/80 px-4 py-2 rounded-full backdrop-blur-sm transition-all shadow-sm font-medium z-10"
+            >
+                <ArrowLeft size={18} />
+                <span>Back to Home</span>
+            </Link>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -52,13 +61,13 @@ const Login = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="identifier">Email or Phone</Label>
                         <Input
-                            id="email"
-                            type="email"
-                            placeholder="name@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            id="identifier"
+                            type="text"
+                            placeholder="Email address or 10-digit phone number"
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
                             required
                         />
                     </div>

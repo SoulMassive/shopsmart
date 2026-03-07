@@ -15,10 +15,10 @@ const statusColors: Record<string, string> = {
 const StatusBadge = ({ status }: StatusBadgeProps) => (
   <span
     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-      statusColors[status.toLowerCase()] || "bg-muted text-muted-foreground"
+      status && statusColors[status.toLowerCase()] ? statusColors[status.toLowerCase()] : "bg-muted text-muted-foreground"
     }`}
   >
-    {status}
+    {status || "Unknown"}
   </span>
 );
 

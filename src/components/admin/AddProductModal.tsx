@@ -34,8 +34,11 @@ const EMPTY_FORM = {
     brandId: "",
     description: "",
     ingredients: "",
+    storageConditions: "",
+    healthBenefits: "",
     weight: "",
-    price: "",
+    originalPrice: "",
+    discountPercentage: "33.33",
     stock: "",
 };
 
@@ -100,7 +103,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onOpenChange })
         if (!form.name.trim()) e.name = "Product name is required";
         if (!form.brandId) e.brandId = "Brand is required";
         if (!form.weight) e.weight = "Weight is required";
-        if (!form.price || parseFloat(form.price) <= 0) e.price = "Price must be > 0";
+        if (!form.originalPrice || parseFloat(form.originalPrice) <= 0) e.originalPrice = "Original Price must be > 0";
         if (form.stock !== "" && parseInt(form.stock) < 0) e.stock = "Stock cannot be negative";
         if (form.description.length > 150) e.description = "Max 150 characters";
         setErrors(e);
@@ -184,8 +187,22 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onOpenChange })
                             value={form.ingredients} onChange={(e) => set("ingredients", e.target.value)} />
                     </div>
 
-                    {/* Weight + Price + Stock (3-column) */}
-                    <div className="grid grid-cols-3 gap-4">
+                    {/* Storage Conditions & Health Benefits */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="p-storage">Storage Conditions</Label>
+                            <Input id="p-storage" placeholder="e.g. Cool, dry place"
+                                value={form.storageConditions} onChange={(e) => set("storageConditions", e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="p-health">Health Benefits</Label>
+                            <Input id="p-health" placeholder="e.g. Rich in fiber"
+                                value={form.healthBenefits} onChange={(e) => set("healthBenefits", e.target.value)} />
+                        </div>
+                    </div>
+
+                    {/* Weight + Price + Stock (4-column) */}
+                    <div className="grid grid-cols-4 gap-4">
                         <div className="space-y-1.5">
                             <Label>Weight <span className="text-destructive">*</span></Label>
                             <Select value={form.weight} onValueChange={(v) => set("weight", v)}>
@@ -201,10 +218,15 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onOpenChange })
                             {errors.weight && <p className="text-xs text-destructive">{errors.weight}</p>}
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="p-price">Price (₹) <span className="text-destructive">*</span></Label>
+                            <Label htmlFor="p-price">Orig. Price <span className="text-destructive">*</span></Label>
                             <Input id="p-price" type="number" placeholder="0.00" min="0.01" step="0.01"
-                                value={form.price} onChange={(e) => set("price", e.target.value)} />
-                            {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
+                                value={form.originalPrice} onChange={(e) => set("originalPrice", e.target.value)} />
+                            {errors.originalPrice && <p className="text-xs text-destructive">{errors.originalPrice}</p>}
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="p-disc">Discount %</Label>
+                            <Input id="p-disc" type="number" placeholder="33.33" min="0" max="100" step="0.1"
+                                value={form.discountPercentage} onChange={(e) => set("discountPercentage", e.target.value)} />
                         </div>
                         <div className="space-y-1.5">
                             <Label htmlFor="p-stock">Stock <span className="text-destructive">*</span></Label>

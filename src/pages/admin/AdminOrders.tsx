@@ -34,11 +34,13 @@ const AdminOrders = () => {
         ) : (
           <DataTable
             columns={[
-              { header: "Order ID", accessor: (row: any) => row._id?.slice(-6).toUpperCase() },
-              { header: "Outlet", accessor: (row: any) => row.user?.name || "—" },
-              { header: "Items", accessor: (row: any) => String(row.items?.length ?? 0) },
-              { header: "Amount", accessor: (row: any) => `₹${row.totalAmount?.toLocaleString()}` },
-              { header: "Status", accessor: (row: any) => <StatusBadge status={row.status} /> },
+              { header: "Order ID", accessor: (row: any) => row._id?.slice(-6).toUpperCase() || row.orderNumber },
+              { header: "Outlet", accessor: (row: any) => row.userId?.name || "—" },
+              { header: "Original", accessor: (row: any) => `₹${(row.subtotal || row.totalAmount)?.toLocaleString()}` },
+              { header: "Discount", accessor: (row: any) => row.discountAmount ? `-₹${row.discountAmount.toLocaleString()}` : "—" },
+              { header: "Offer", accessor: (row: any) => row.discountType === "FIRST_ORDER" ? "First Order 50%" : "—" },
+              { header: "Final", accessor: (row: any) => `₹${row.totalAmount?.toLocaleString()}` },
+              { header: "Status", accessor: (row: any) => <StatusBadge status={row.orderStatus || row.status} /> },
               { header: "Date", accessor: (row: any) => new Date(row.createdAt).toLocaleDateString() },
             ]}
             data={data || []}

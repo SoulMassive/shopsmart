@@ -2,6 +2,11 @@
 node_modules/
 .pnp
 .pnp.js
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnpm-debug.log*
 
 # ── Build outputs ─────────────────────────────────────────────────────────────
 dist/
@@ -9,6 +14,9 @@ dist-ssr/
 build/
 out/
 .output/
+.parcel-cache/
+.cache/
+.turbo/
 
 # ── Environment variables — NEVER commit real secrets ─────────────────────────
 .env
@@ -31,6 +39,8 @@ lerna-debug.log*
 # ── File Uploads & Local Data ─────────────────────────────────────────────────
 uploads/
 backend/uploads/
+*.db
+*.sqlite
 
 # ── OS generated files ────────────────────────────────────────────────────────
 .DS_Store
@@ -61,17 +71,19 @@ desktop.ini
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# ── Bun ───────────────────────────────────────────────────────────────────────
+bun.lockb
+# Optional: bun.lock (if using text lockfile)
+
 # ── TypeScript ────────────────────────────────────────────────────────────────
 *.tsbuildinfo
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 coverage/
 .nyc_output/
+.vitest-results/
 
 # ── Misc ──────────────────────────────────────────────────────────────────────
-.cache/
-.parcel-cache/
-.turbo/
 .vercel/
 .netlify/
 *.pem

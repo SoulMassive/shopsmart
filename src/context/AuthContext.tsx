@@ -5,7 +5,9 @@ interface User {
     _id: string;
     name: string;
     email: string;
-    role: "admin" | "user";
+    role: "admin" | "user" | "executive" | "retailOutlet";
+    hasUsedFirstOrderOffer?: boolean;
+    outletId?: string;
 }
 
 interface AuthContextType {
