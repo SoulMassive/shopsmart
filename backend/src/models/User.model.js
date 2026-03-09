@@ -78,7 +78,7 @@ userSchema.pre('save', async function (next) {
 
 // Soft-delete: exclude deleted users by default
 userSchema.pre(/^find/, function (next) {
-    if (!this._conditions.deletedAt) this.where({ deletedAt: null });
+    if (!this._conditions?.deletedAt) this.where({ deletedAt: null });
     next();
 });
 

@@ -83,7 +83,7 @@ outletSchema.index({ 'address.city': 1, 'address.state': 1 });
 outletSchema.index({ deletedAt: 1 });
 
 outletSchema.pre(/^find/, function (next) {
-    if (!this._conditions.deletedAt) this.where({ deletedAt: null });
+    if (!this._conditions?.deletedAt) this.where({ deletedAt: null });
     next();
 });
 

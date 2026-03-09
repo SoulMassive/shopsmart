@@ -19,6 +19,7 @@ out/
 .turbo/
 
 # ── Environment variables — NEVER commit real secrets ─────────────────────────
+node_modules/
 .env
 .env.*
 !.env.example

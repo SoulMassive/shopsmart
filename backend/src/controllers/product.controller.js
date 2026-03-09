@@ -26,8 +26,8 @@ const getProducts = async (req, res) => {
             .populate('brandId', 'name slug')
             .skip((page - 1) * limit)
             .limit(Number(limit))
-            .sort({ createdAt: -1 })
-            .allowDiskUse(true);
+            .sort({ createdAt: -1 });
+            // .allowDiskUse(true); // Removed as it can cause crashes in some Mongo/Mongoose versions
 
         res.json({ products, total, page: Number(page), pages: Math.ceil(total / limit) });
     } catch (error) {
