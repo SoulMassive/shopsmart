@@ -31,8 +31,15 @@ const getProducts = async (req, res) => {
 
         res.json({ products, total, page: Number(page), pages: Math.ceil(total / limit) });
     } catch (error) {
-        console.error('[getProducts error]', error.message);
-        res.status(500).json({ message: error.message });
+        console.error('[getProducts error]', {
+            message: error.message,
+            stack: error.stack,
+            query: req.query
+        });
+        res.status(500).json({ 
+            message: 'Internal Server Error while fetching products',
+            details: error.message 
+        });
     }
 };
 

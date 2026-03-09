@@ -29,7 +29,7 @@ categorySchema.index({ brandId: 1 });
 categorySchema.index({ slug: 1 }, { unique: true });
 categorySchema.index({ parentId: 1 });
 categorySchema.pre(/^find/, function (next) {
-    if (!this._conditions.deletedAt) this.where({ deletedAt: null });
+    if (!this._conditions?.deletedAt) this.where({ deletedAt: null });
     next();
 });
 

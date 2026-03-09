@@ -13,26 +13,33 @@ connectDB();
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:8080',
+    'https://shopsmart-hazel.vercel.app',
     process.env.CLIENT_URL,
-].filter(Boolean);
+].filter(Boolean).map(o => o.replace(/\/$/, '')); // Remove trailing slashes
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (e.g. Postman, mobile apps)
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin) return callback(null, true);
+        
+        const normalizedOrigin = origin.replace(/\/$/, '');
+        if (allowedOrigins.includes(normalizedOrigin)) {
             callback(null, true);
         } else {
-            callback(new Error(`CORS blocked: ${origin}`));
+            console.error(`[CORS] Rejected: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+            // In development, maybe allow it but log it? No, stay strict but informative.
+            callback(new Error(`CORS blocked for origin: ${origin}`));
         }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
 
 app.use(express.json({ limit: '256mb' }));
 app.use(express.urlencoded({ extended: false, limit: '256mb' }));
 app.use(morgan('dev'));
 
-// Serve uploaded images statically
+// Static files
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -45,7 +52,7 @@ app.use('/api/outlets', require('./routes/outlet.routes'));
 app.use('/api/admin/analytics', require('./routes/analytics.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Retail Connect Pro API is running' });
 });
@@ -57,9 +64,18 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    // Ensure CORS headers are present even on errors
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+
+    console.error(`[Error Handler] ${req.method} ${req.url}:`, err.stack || err);
+    
     res.status(err.statusCode || 500).json({
         message: err.message || 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err : undefined
     });
 });
 
