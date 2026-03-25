@@ -23,6 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Loader2, Pencil, Trash2, PackageOpen } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -40,12 +47,13 @@ const EditProductModal = ({
   const [form, setForm] = useState({
     name: product.name || "",
     originalPrice: String(product.originalPrice || ""),
-    discountPercentage: String(product.discountPercentage || "33.33"),
+    discountPercentage: String(product.discountPercentage ?? "0"),
     stock: String(product.stock || ""),
     description: product.description || "",
     ingredients: product.ingredients || "",
     storageConditions: product.storageConditions || "",
     healthBenefits: product.healthBenefits || "",
+    weight: String(product.weight || ""),
   });
 
   const mutation = useMutation({
@@ -53,13 +61,14 @@ const EditProductModal = ({
       return (
         await api.patch(`/admin/products/${product._id}`, {
           name: form.name,
-          originalPrice: parseFloat(form.originalPrice),
-          discountPercentage: parseFloat(form.discountPercentage),
-          stock: parseInt(form.stock),
+          originalPrice: parseFloat(form.originalPrice) || 0,
+          discountPercentage: form.discountPercentage ? parseFloat(form.discountPercentage) : 0,
+          stock: parseInt(form.stock) || 0,
           description: form.description,
           ingredients: form.ingredients,
           storageConditions: form.storageConditions,
           healthBenefits: form.healthBenefits,
+          weight: form.weight && form.weight !== "none" ? parseInt(form.weight) : null,
         })
       ).data;
     },
@@ -84,7 +93,7 @@ const EditProductModal = ({
             <Label>Product Name</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div className="space-y-1.5">
               <Label>Original Price (₹)</Label>
               <Input type="number" min="0.01" step="0.01" value={form.originalPrice}
@@ -99,6 +108,23 @@ const EditProductModal = ({
               <Label>Stock</Label>
               <Input type="number" min="0" value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Weight</Label>
+              <Select 
+                value={form.weight} 
+                onValueChange={(v) => setForm({ ...form, weight: v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="250">250g</SelectItem>
+                  <SelectItem value="500">500g</SelectItem>
+                  <SelectItem value="750">750g</SelectItem>
+                  <SelectItem value="1000">1kg</SelectItem>
+                  <SelectItem value="2000">2kg</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="space-y-1.5">

@@ -97,7 +97,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
                 <div className="flex items-center justify-between mt-auto">
                     <div className="flex flex-col">
-                        <span className="text-gray-400 line-through text-xs font-medium">₹{product.originalPrice?.toLocaleString()}</span>
+                        {product.discountPercentage > 0 && (
+                            <span className="text-gray-400 line-through text-xs font-medium">₹{product.originalPrice?.toLocaleString()}</span>
+                        )}
                         <span className="text-lg font-bold text-green-600 leading-none mt-0.5">₹{product.discountedPrice?.toLocaleString()}</span>
                     </div>
                     <span className="text-[11px] text-gray-400">{product.stock} units</span>

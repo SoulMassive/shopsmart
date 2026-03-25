@@ -70,7 +70,9 @@ const RetailProducts = () => {
                     <p className="text-xs text-muted-foreground">{p.category}</p>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-gray-400 line-through text-xs">₹{p.originalPrice}</span>
+                    {p.discountPercentage > 0 && (
+                      <span className="text-gray-400 line-through text-xs">₹{p.originalPrice}</span>
+                    )}
                     <span className="text-lg font-bold text-green-600 leading-none mt-0.5">₹{p.discountedPrice}</span>
                   </div>
                 </div>

@@ -38,7 +38,7 @@ const EMPTY_FORM = {
     healthBenefits: "",
     weight: "",
     originalPrice: "",
-    discountPercentage: "33.33",
+    discountPercentage: "0",
     stock: "",
 };
 
@@ -84,7 +84,15 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onOpenChange })
                     img.src = url;
                 });
             }
-            return (await api.post("/admin/products", { ...form, imageData })).data;
+            const payload = {
+                ...form,
+                originalPrice: parseFloat(form.originalPrice),
+                discountPercentage: form.discountPercentage ? parseFloat(form.discountPercentage) : 0,
+                stock: form.stock ? parseInt(form.stock) : 0,
+                weight: form.weight && form.weight !== "none" ? parseInt(form.weight) : undefined,
+                imageData
+            };
+            return (await api.post("/admin/products", payload)).data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -102,7 +110,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onOpenChange })
         const e: Record<string, string> = {};
         if (!form.name.trim()) e.name = "Product name is required";
         if (!form.brandId) e.brandId = "Brand is required";
-        if (!form.weight) e.weight = "Weight is required";
         if (!form.originalPrice || parseFloat(form.originalPrice) <= 0) e.originalPrice = "Original Price must be > 0";
         if (form.stock !== "" && parseInt(form.stock) < 0) e.stock = "Stock cannot be negative";
         if (form.description.length > 150) e.description = "Max 150 characters";
@@ -204,10 +211,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onOpenChange })
                     {/* Weight + Price + Stock (4-column) */}
                     <div className="grid grid-cols-4 gap-4">
                         <div className="space-y-1.5">
-                            <Label>Weight <span className="text-destructive">*</span></Label>
+                            <Label>Weight <span className="text-muted-foreground text-xs ml-1">(Opt.)</span></Label>
                             <Select value={form.weight} onValueChange={(v) => set("weight", v)}>
                                 <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
                                     {WEIGHT_OPTIONS.map((w) => (
                                         <SelectItem key={w} value={w}>
                                             {parseInt(w) >= 1000 ? `${parseInt(w) / 1000}kg` : `${w}g`}

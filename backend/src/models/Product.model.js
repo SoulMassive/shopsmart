@@ -47,7 +47,7 @@ const productSchema = new mongoose.Schema(
         },
         discountPercentage: {
             type: Number,
-            default: 33.33,
+            default: 0,
             min: [0, 'Discount cannot be negative'],
             max: [100, 'Discount cannot exceed 100%']
         },
@@ -110,7 +110,7 @@ productSchema.pre('save', function (next) {
 
     // Auto-calculate discountedPrice if originalPrice or discountPercentage is modified
     if (this.isModified('originalPrice') || this.isModified('discountPercentage')) {
-        const discount = this.discountPercentage !== undefined ? this.discountPercentage : 33.33;
+        const discount = this.discountPercentage !== undefined ? this.discountPercentage : 0;
         this.discountedPrice = Math.round(this.originalPrice - (this.originalPrice * discount / 100));
     }
     
