@@ -225,4 +225,208 @@ router.get('/products', protect, adminOnly, async (req, res) => {
     }
 });
 
+// @desc  Get Full Analytics Report
+// @route GET /api/admin/analytics/reports
+router.get('/reports', protect, adminOnly, async (req, res) => {
+    try {
+        const { from, to } = req.query;
+        const start = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const end = to ? new Date(to) : new Date();
+
+        const matchStage = {
+            createdAt: { $gte: start, $lte: end },
+            orderStatus: { $ne: 'Cancelled' }
+        };
+
+        // 1. Summary Stats
+        const summaryArr = await Order.aggregate([
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: "$totalAmount" },
+                    totalOrders: { $count: {} },
+                    avgOrderValue: { $avg: "$totalAmount" }
+                }
+            }
+        ]);
+        const summary = summaryArr[0] || { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 };
+        const activeOutlets = await User.countDocuments({ role: 'retailOutlet', isActive: true });
+
+        // 2. Revenue Over Time (Daily)
+        const revenueOverTime = await Order.aggregate([
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    revenue: { $sum: "$totalAmount" },
+                    orders: { $count: {} }
+                }
+            },
+            { $project: { date: "$_id", revenue: 1, orders: 1, _id: 0 } },
+            { $sort: { date: 1 } }
+        ]);
+
+        // 3. Top Products by Revenue
+        const topProducts = await Order.aggregate([
+            { $match: matchStage },
+            { $unwind: "$items" },
+            {
+                $lookup: {
+                    from: 'orderitems',
+                    localField: 'items',
+                    foreignField: '_id',
+                    as: 'itemData'
+                }
+            },
+            { $unwind: "$itemData" },
+            {
+                $group: {
+                    _id: "$itemData.productId",
+                    name: { $first: "$itemData.name" },
+                    unitsSold: { $sum: "$itemData.quantity" },
+                    revenue: { $sum: "$itemData.subtotal" }
+                }
+            },
+            { $addFields: { totalRevenueOverall: summary.totalRevenue } },
+            { $project: { 
+                id: "$_id",
+                name: 1, 
+                unitsSold: 1, 
+                revenue: 1, 
+                percent: { 
+                    $cond: [
+                        { $eq: ["$totalRevenueOverall", 0] }, 
+                        0, 
+                        { $multiply: [{ $divide: ["$revenue", "$totalRevenueOverall"] }, 100] }
+                    ] 
+                } 
+            }},
+            { $sort: { revenue: -1 } },
+            { $limit: 10 }
+        ]);
+
+        // 4. Orders by Status
+        const ordersByStatus = await Order.aggregate([
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: "$orderStatus",
+                    value: { $sum: 1 }
+                }
+            },
+            { $project: { name: "$_id", value: 1, _id: 0 } }
+        ]);
+
+        // 5. Top Outlets by Spend
+        const topOutlets = await Order.aggregate([
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: "$outletId",
+                    orderCount: { $sum: 1 },
+                    totalSpend: { $sum: "$totalAmount" }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'outlets',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'outletData'
+                }
+            },
+            { $unwind: "$outletData" },
+            { $project: { id: "$_id", name: "$outletData.name", orderCount: 1, totalSpend: 1 } },
+            { $sort: { totalSpend: -1 } },
+            { $limit: 10 }
+        ]);
+
+        res.json({
+            summary: { ...summary, activeOutlets },
+            revenueOverTime,
+            topProducts,
+            ordersByStatus,
+            topOutlets
+        });
+    } catch (err) {
+        console.error('[Reports Error]', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// @desc  Log Executive GPS Location
+// @route POST /api/admin/analytics/log
+router.post('/log', protect, async (req, res) => {
+    try {
+        const { latitude, longitude, outletId, status, distance } = req.body;
+        const log = await ExecutiveLog.create({
+            executiveId: req.user._id,
+            executiveName: req.user.name,
+            latitude,
+            longitude,
+            outletId,
+            status,
+            distance: distance || 0,
+            timestamp: new Date()
+        });
+        res.status(201).json(log);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// @desc  Get Live Tracking Data (Admin)
+// @route GET /api/admin/analytics/tracking
+router.get('/tracking', protect, adminOnly, async (req, res) => {
+    try {
+        const latestLogs = await ExecutiveLog.aggregate([
+            { $sort: { timestamp: -1 } },
+            {
+                $group: {
+                    _id: "$executiveId",
+                    latestLog: { $first: "$$ROOT" }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'userData'
+                }
+            },
+            { $unwind: "$userData" },
+            {
+                $project: {
+                    executiveId: "$_id",
+                    name: "$userData.name",
+                    email: "$userData.email",
+                    phone: "$userData.phone",
+                    latitude: "$latestLog.latitude",
+                    longitude: "$latestLog.longitude",
+                    status: "$latestLog.status",
+                    lastUpdate: "$latestLog.timestamp"
+                }
+            }
+        ]);
+        res.json(latestLogs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// @desc  Get My Location Logs (Executive)
+// @route GET /api/admin/analytics/my-logs
+router.get('/my-logs', protect, async (req, res) => {
+    try {
+        const logs = await ExecutiveLog.find({ executiveId: req.user._id })
+            .sort({ timestamp: -1 })
+            .limit(10);
+        res.json(logs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

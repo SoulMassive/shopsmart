@@ -10,7 +10,7 @@ interface DataTableProps<T> {
   title?: string;
 }
 
-function DataTable<T extends { id: string | number }>({ columns, data, title }: DataTableProps<T>) {
+function DataTable<T extends { id?: string | number; _id?: string | number }>({ columns, data, title }: DataTableProps<T>) {
   return (
     <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
       {title && (
@@ -30,13 +30,13 @@ function DataTable<T extends { id: string | number }>({ columns, data, title }: 
             </tr>
           </thead>
           <tbody>
-            {data.map((row) => (
-              <tr key={row.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+            {data.map((row, rowIndex) => (
+              <tr key={row.id || row._id || rowIndex} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                 {columns.map((col, i) => (
                   <td key={i} className={`px-5 py-3 text-card-foreground ${col.className || ""}`}>
                     {typeof col.accessor === "function"
                       ? col.accessor(row)
-                      : String(row[col.accessor] ?? "")}
+                      : String((row as any)[col.accessor] ?? "")}
                   </td>
                 ))}
               </tr>

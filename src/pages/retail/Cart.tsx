@@ -40,7 +40,7 @@ const Cart = () => {
             setIsCheckingOut(true);
             const payload = {
                 items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
-                shippingAddress: outlet?.address || { street: "123 Shop Ave", city: "Mumbai", state: "MH", zipCode: "400001" },
+                shippingAddress: outlet?.address,
                 paymentMethod: "COD"
             };
             await api.post("/orders", payload);
@@ -161,9 +161,25 @@ const Cart = () => {
                                 </div>
                             </div>
 
+                            {(!outlet?.address || !outlet.address.street || !outlet.address.city || !outlet.address.state || !outlet.address.zipCode) && (
+                                <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex flex-col items-center gap-3 text-center">
+                                    <p className="text-destructive text-sm font-medium">
+                                        Please complete your outlet address in Profile Settings before placing an order.
+                                    </p>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="text-primary border-primary/30 hover:bg-primary/5"
+                                        onClick={() => navigate("/retail/profile")}
+                                    >
+                                        Go to Profile Settings
+                                    </Button>
+                                </div>
+                            )}
+
                             <div className="flex flex-col sm:flex-row gap-3 pt-1">
                                 <Button
-                                    disabled={isCheckingOut}
+                                    disabled={isCheckingOut || !outlet?.address || !outlet.address.street || !outlet.address.city || !outlet.address.state || !outlet.address.zipCode}
                                     className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 gap-2 py-5 text-base font-semibold"
                                     onClick={handleCheckout}
                                 >

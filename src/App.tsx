@@ -25,6 +25,8 @@ import AdminTracking from "./pages/admin/AdminTracking";
 import AdminReports from "./pages/admin/AdminReports";
 import UserProfile from "./pages/admin/UserProfile";
 import AdminCart from "./pages/admin/AdminCart";
+import AdminBulkData from "./pages/admin/AdminBulkData";
+import AdminBulkHistory from "./pages/admin/AdminBulkHistory";
 
 // Retail pages
 import RetailDashboard from "./pages/retail/RetailDashboard";
@@ -34,6 +36,12 @@ import RetailOrderHistory from "./pages/retail/RetailOrderHistory";
 import RetailProfile from "./pages/retail/RetailProfile";
 import Cart from "./pages/retail/Cart";
 
+// Field pages
+import FieldDashboard from "./pages/field/FieldDashboard";
+import FieldOutlets from "./pages/field/FieldOutlets";
+import FieldTracking from "./pages/field/FieldTracking";
+import FieldPerformance from "./pages/field/FieldPerformance";
+import FieldSessions from "./pages/field/FieldSessions";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -65,6 +73,8 @@ const App = () => (
                         <Route path="users/:userId" element={<UserProfile />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="products" element={<AdminProducts />} />
+                        <Route path="bulk" element={<AdminBulkData />} />
+                        <Route path="bulk-history" element={<AdminBulkHistory />} />
                         <Route path="tracking" element={<AdminTracking />} />
                         <Route path="reports" element={<AdminReports />} />
                         <Route path="cart" element={<AdminCart />} />
@@ -77,7 +87,7 @@ const App = () => (
                 <Route
                   path="/retail/*"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="retailOutlet">
                       <Routes>
                         <Route index element={<RetailDashboard />} />
                         <Route path="products" element={<RetailProducts />} />
@@ -85,6 +95,21 @@ const App = () => (
                         <Route path="orders" element={<RetailOrderHistory />} />
                         <Route path="profile" element={<RetailProfile />} />
                         <Route path="cart" element={<Cart />} />
+                      </Routes>
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Field Executive */}
+                <Route
+                  path="/field/*"
+                  element={
+                    <ProtectedRoute requiredRole="executive">
+                      <Routes>
+                        <Route index element={<FieldDashboard />} />
+                        <Route path="outlets" element={<FieldOutlets />} />
+                        <Route path="tracking" element={<FieldTracking />} />
+                        <Route path="performance" element={<FieldPerformance />} />
+                        <Route path="sessions" element={<FieldSessions />} />
                       </Routes>
                     </ProtectedRoute>
                   }

@@ -1,9 +1,10 @@
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    requiredRole?: "admin" | "user";
+    requiredRole?: "admin" | "user" | "executive" | "retailOutlet";
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
@@ -23,7 +24,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     }
 
     if (requiredRole && user.role !== requiredRole) {
-        const redirectPath = user.role === "admin" ? "/admin" : "/retail";
+        let redirectPath = "/retail";
+        if (user.role === "admin") redirectPath = "/admin";
+        else if (user.role === "executive") redirectPath = "/field";
+        else if (user.role === "retailOutlet") redirectPath = "/retail";
+        
         return <Navigate to={redirectPath} replace />;
     }
 

@@ -1,61 +1,117 @@
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { adminConfig } from "@/config/adminConfig";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Loader2, Phone, Clock, ExternalLink } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
-const executives = [
-  { name: "Rajesh Kumar", territory: "North Delhi", distance: "24.5 km", outlets: 8, lastSeen: "10 min ago" },
-  { name: "Priya Sharma", territory: "South Mumbai", distance: "18.2 km", outlets: 6, lastSeen: "5 min ago" },
-  { name: "Sunita Verma", territory: "West Pune", distance: "12.8 km", outlets: 4, lastSeen: "22 min ago" },
-];
+const AdminTracking = () => {
+    const { data: logs, isLoading, error } = useQuery({
+        queryKey: ["adminTracking"],
+        queryFn: async () => {
+            const { data } = await api.get("/admin/analytics/tracking");
+            return data;
+        },
+        refetchInterval: 30000, // Refresh every 30 seconds
+    });
 
-const AdminTracking = () => (
-  <DashboardLayout role={adminConfig}>
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">GPS Monitoring</h1>
-        <p className="text-sm text-muted-foreground">Track field executive locations in real-time</p>
-      </div>
+    const handleViewOnMap = (lat: number, lng: number) => {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, "_blank");
+    };
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Map placeholder */}
-        <div className="lg:col-span-2 bg-card rounded-2xl border border-border shadow-card overflow-hidden">
-          <div className="h-[500px] flex items-center justify-center bg-muted/30 relative">
-            <div className="text-center">
-              <MapPin className="h-12 w-12 text-primary/30 mx-auto mb-3" />
-              <p className="text-muted-foreground font-medium">Google Maps Integration</p>
-              <p className="text-xs text-muted-foreground mt-1">Real-time executive tracking will appear here</p>
+    return (
+        <DashboardLayout role={adminConfig}>
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">GPS Monitoring</h1>
+                        <p className="text-sm text-muted-foreground">Track field executive locations in real-time</p>
+                    </div>
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-6">
+                    {/* Map placeholder */}
+                    <div className="lg:col-span-2 bg-card rounded-2xl border border-border shadow-card overflow-hidden">
+                        <div className="h-[600px] flex items-center justify-center bg-muted/20 relative">
+                            <div className="text-center p-8">
+                                <MapPin className="h-12 w-12 text-primary/30 mx-auto mb-3" />
+                                <h3 className="text-lg font-semibold text-foreground">Real-time Visualization</h3>
+                                <p className="text-sm text-muted-foreground mt-2 max-w-[300px] mx-auto">
+                                    Agent positions are updated live. In production, this area uses OpenStreetMaps or Google Maps to show all breadcrumbs.
+                                </p>
+                            </div>
+                            
+                            {/* Visual indicator of active agents */}
+                            {!isLoading && logs?.map((agent: any, i: number) => (
+                                <div 
+                                    key={agent.executiveId}
+                                    className="absolute h-4 w-4 rounded-full bg-primary animate-pulse border-2 border-card shadow-lg"
+                                    style={{ 
+                                        top: `${20 + (i * 15) % 60}%`, 
+                                        left: `${15 + (i * 25) % 70}%` 
+                                    }}
+                                    title={agent.name}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Executive list */}
+                    <div className="bg-card rounded-2xl border border-border shadow-card flex flex-col max-h-[600px]">
+                        <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between">
+                            <h3 className="font-semibold text-card-foreground">Online Executives</h3>
+                            {isLoading && <Loader2 size={16} className="animate-spin text-muted-foreground" />}
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            {error ? (
+                                <p className="text-center text-sm text-destructive">Failed to load tracking data.</p>
+                            ) : logs?.length === 0 ? (
+                                <p className="text-center text-sm text-muted-foreground py-10">No agents currently active.</p>
+                            ) : (
+                                logs?.map((agent: any) => (
+                                    <div key={agent.executiveId} className="p-4 rounded-xl bg-card border border-border hover:border-primary/50 transition-all space-y-3 shadow-sm group">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="font-bold text-sm text-card-foreground">{agent.name}</p>
+                                                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                    <Clock size={10} />
+                                                    Updated {new Date(agent.lastUpdate).toLocaleTimeString()}
+                                                </p>
+                                            </div>
+                                            <div className={`h-2.5 w-2.5 rounded-full ${agent.status === 'Traveling' ? 'bg-blue-500' : agent.status === 'At Outlet' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-4 text-xs">
+                                            <span className="flex items-center gap-1.5 text-muted-foreground">
+                                                <Navigation size={12} className="text-primary" />
+                                                {agent.status}
+                                            </span>
+                                            <span className="flex items-center gap-1.5 text-muted-foreground">
+                                                <Phone size={12} className="text-primary" />
+                                                {agent.phone || "—"}
+                                            </span>
+                                        </div>
+
+                                        <Button 
+                                            variant="secondary" 
+                                            size="sm" 
+                                            className="w-full text-[10px] h-8 gap-2"
+                                            onClick={() => handleViewOnMap(agent.latitude, agent.longitude)}
+                                        >
+                                            <ExternalLink size={12} />
+                                            View Real-time Position
+                                        </Button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
-            {/* Simulated map pins */}
-            <div className="absolute top-1/4 left-1/3 h-4 w-4 rounded-full bg-primary animate-glow-pulse" />
-            <div className="absolute top-1/2 right-1/3 h-4 w-4 rounded-full bg-accent animate-glow-pulse" style={{ animationDelay: "0.5s" }} />
-            <div className="absolute bottom-1/3 left-1/2 h-4 w-4 rounded-full bg-primary animate-glow-pulse" style={{ animationDelay: "1s" }} />
-          </div>
-        </div>
-
-        {/* Executive list */}
-        <div className="bg-card rounded-2xl border border-border shadow-card p-5 space-y-4">
-          <h3 className="font-semibold text-card-foreground">Active Executives</h3>
-          {executives.map((exec) => (
-            <div key={exec.name} className="p-3 rounded-xl bg-muted/30 border border-border space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-sm text-card-foreground">{exec.name}</p>
-                <span className="text-xs text-muted-foreground">{exec.lastSeen}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">{exec.territory}</p>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1 text-primary">
-                  <Navigation className="h-3 w-3" /> {exec.distance}
-                </span>
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> {exec.outlets} outlets
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </DashboardLayout>
-);
+        </DashboardLayout>
+    );
+};
 
 export default AdminTracking;

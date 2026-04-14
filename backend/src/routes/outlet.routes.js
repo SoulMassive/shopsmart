@@ -45,4 +45,15 @@ router.patch('/:id', protect, async (req, res) => {
     }
 });
 
+// @desc  Get outlets assigned to the field executive
+// @route GET /api/outlets/executive
+router.get('/executive', protect, async (req, res) => {
+    try {
+        const outlets = await Outlet.find({ executiveId: req.user._id });
+        res.json(outlets);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

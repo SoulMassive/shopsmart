@@ -27,7 +27,10 @@ const Login = () => {
             const { data } = await api.post("/auth/login", { identifier, password });
             login(data.token, data);
             toast.success("Welcome back!");
-            const redirectPath = data.role === "admin" ? "/admin" : "/retail";
+            let redirectPath = "/retail";
+            if (data.role === "admin") redirectPath = "/admin";
+            else if (data.role === "executive") redirectPath = "/field";
+            
             navigate(redirectPath);
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Invalid credentials");

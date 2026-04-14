@@ -51,6 +51,8 @@ app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/outlets', require('./routes/outlet.routes'));
 app.use('/api/admin/analytics', require('./routes/analytics.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/bulk', require('./routes/bulk.routes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -27,9 +27,9 @@ const RetailDashboard = () => {
     },
   });
 
-  const totalSpent = orders?.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0) || 0;
-  const pendingOrders = orders?.filter((o: any) => ["pending", "confirmed"].includes(o.status)).length || 0;
-  const recentOrders = orders?.slice(0, 5) || [];
+  const totalSpent = (orders || []).reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+  const pendingOrders = (orders || []).filter((o: any) => ["pending", "confirmed", "Confirmed", "Pending"].includes(o.orderStatus || o.status)).length;
+  const recentOrders = (orders || []).slice(0, 5);
 
   return (
     <DashboardLayout role={retailConfig}>

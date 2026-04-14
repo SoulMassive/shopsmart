@@ -16,6 +16,34 @@ const AdminOrders = () => {
     },
   });
 
+  const handleExportCSV = () => {
+    if (!data || data.length === 0) return;
+    const headers = ["Order ID", "Outlet", "Original Price", "Discount", "Offer Applied", "Final Price", "Status", "Date"];
+    const csvRows = [
+      headers.join(","),
+      ...data.map((row: any) => [
+        row._id,
+        `"${(row.outletId?.name || row.userId?.name || "").replace(/"/g, '""')}"`,
+        row.subtotal || row.totalAmount,
+        row.discountAmount || 0,
+        row.discountType === "FIRST_ORDER" ? "First Order 50%" : "None",
+        row.totalAmount,
+        row.orderStatus || row.status,
+        new Date(row.createdAt).toLocaleDateString()
+      ].join(","))
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `orders_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DashboardLayout role={adminConfig}>
       <div className="space-y-6">
@@ -24,7 +52,7 @@ const AdminOrders = () => {
             <h1 className="text-2xl font-bold text-foreground">Order Management</h1>
             <p className="text-sm text-muted-foreground">Track and manage all orders</p>
           </div>
-          <Button variant="outline" size="sm">Export CSV</Button>
+          <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isLoading}>Export CSV</Button>
         </div>
 
         {isLoading ? (
@@ -35,7 +63,7 @@ const AdminOrders = () => {
           <DataTable
             columns={[
               { header: "Order ID", accessor: (row: any) => row._id?.slice(-6).toUpperCase() || row.orderNumber },
-              { header: "Outlet", accessor: (row: any) => row.userId?.name || "—" },
+              { header: "Outlet", accessor: (row: any) => row.outletId?.name || row.userId?.name || "—" },
               { header: "Original", accessor: (row: any) => `₹${(row.subtotal || row.totalAmount)?.toLocaleString()}` },
               { header: "Discount", accessor: (row: any) => row.discountAmount ? `-₹${row.discountAmount.toLocaleString()}` : "—" },
               { header: "Offer", accessor: (row: any) => row.discountType === "FIRST_ORDER" ? "First Order 50%" : "—" },

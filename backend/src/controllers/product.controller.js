@@ -1,5 +1,10 @@
 const Product = require('../models/Product.model');
 const Brand = require('../models/Brand.model');
+const Category = require('../models/Category.model');
+const fs = require('fs');
+const path = require('path');
+const csv = require('csv-parser');
+const mongoose = require('mongoose');
 
 // @desc    Get all products (with optional search & brand/category filter)
 // @route   GET /api/products
@@ -93,4 +98,85 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct };
+// @desc    Import products from CSV (admin)
+// @route   POST /api/products/import
+const importProducts = async (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const results = [];
+    const summary = { created: 0, updated: 0, errors: [] };
+
+    fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on('data', (data) => results.push(data))
+        .on('end', async () => {
+            for (const [index, row] of results.entries()) {
+                try {
+                    const productId = row['Product ID'] || row['productId'];
+                    const name = row['Name'] || row['name'];
+                    const brandName = row['Brand'] || row['brand'];
+                    const categoryName = row['Category'] || row['category'];
+                    const price = row['Price'] || row['price'];
+                    const stock = row['Stock'] || row['stock'];
+                    const unit = row['Unit'] || row['unit'];
+
+                    if (!name || !brandName || !price) {
+                        throw new Error('Missing required fields: Name, Brand, or Price');
+                    }
+
+                    // Lookup Brand
+                    let brand = await Brand.findOne({ name: new RegExp(`^${brandName.trim()}$`, 'i') });
+                    if (!brand) throw new Error(`Brand not found: ${brandName}`);
+
+                    // Lookup Category
+                    let categoryId = null;
+                    if (categoryName) {
+                        const category = await Category.findOne({ name: new RegExp(`^${categoryName.trim()}$`, 'i') });
+                        if (category) categoryId = category._id;
+                    }
+
+                    const productData = {
+                        name: name.trim(),
+                        brandId: brand._id,
+                        categoryId,
+                        originalPrice: Number(price),
+                        stock: Number(stock) || 0,
+                        unit: (unit || 'piece').trim().toLowerCase(),
+                        isActive: true
+                    };
+
+                    if (productId && mongoose.Types.ObjectId.isValid(productId)) {
+                        const updated = await Product.findByIdAndUpdate(productId, productData, { new: true });
+                        if (updated) {
+                            summary.updated++;
+                        } else {
+                            // If ID provided but not found, create new (ignoring that ID)
+                            await Product.create(productData);
+                            summary.created++;
+                        }
+                    } else {
+                        await Product.create(productData);
+                        summary.created++;
+                    }
+                } catch (err) {
+                    summary.errors.push(`Row ${index + 1}: ${err.message}`);
+                }
+            }
+            
+            // Clean up uploaded file
+            fs.unlinkSync(req.file.path);
+            res.json(summary);
+        })
+        .on('error', (err) => {
+            res.status(500).json({ message: 'Error processing CSV', error: err.message });
+        });
+};
+
+module.exports = { 
+    getProducts, 
+    getProductById, 
+    createProduct, 
+    updateProduct, 
+    deleteProduct,
+    importProducts
+};

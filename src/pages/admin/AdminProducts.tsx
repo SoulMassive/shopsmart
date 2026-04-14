@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Loader2, Pencil, Trash2, PackageOpen } from "lucide-react";
+import { Plus, Loader2, Pencil, Trash2, PackageOpen, Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import AddProductModal from "@/components/admin/AddProductModal";
@@ -188,6 +188,61 @@ const AdminProducts = () => {
     },
   });
 
+  const handleExportCSV = () => {
+    if (!data || data.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const headers = ["Product ID", "Name", "Brand", "Category", "Price", "Stock", "Unit"];
+    const csvRows = [
+      headers.join(","),
+      ...data.map((p: any) => [
+        p._id,
+        `"${p.name.replace(/"/g, '""')}"`,
+        `"${(p.brandId?.name || "").replace(/"/g, '""')}"`,
+        `"${(p.categoryId?.name || "").replace(/"/g, '""')}"`,
+        p.originalPrice,
+        p.stock,
+        p.unit
+      ].join(","))
+    ];
+    
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `products_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const toastId = toast.loading("Importing products...");
+    try {
+      const { data: summary } = await api.post("/products/import", formData);
+      toast.dismiss(toastId);
+      toast.success(`Import complete! Created: ${summary.created}, Updated: ${summary.updated}`);
+      if (summary.errors.length > 0) {
+        console.error("Import errors:", summary.errors);
+        toast.error(`${summary.errors.length} rows had errors. Check console.`);
+      }
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } catch (error: any) {
+      toast.dismiss(toastId);
+      toast.error(error.response?.data?.message || "Import failed.");
+    } finally {
+      event.target.value = ""; // Reset input
+    }
+  };
+
   return (
     <DashboardLayout role={adminConfig}>
       <div className="space-y-6">
@@ -198,9 +253,25 @@ const AdminProducts = () => {
             <h1 className="text-2xl font-bold text-foreground">Product Management</h1>
             <p className="text-sm text-muted-foreground">Manage brands, products, and pricing</p>
           </div>
-          <Button size="sm" className="gap-2" onClick={() => setIsAddOpen(true)}>
-            <Plus size={16} /> Add Product
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleExportCSV} disabled={isLoading}>
+              <Download size={16} /> Export CSV
+            </Button>
+            <div className="relative">
+              <Input
+                type="file"
+                accept=".csv"
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                onChange={handleImportCSV}
+              />
+              <Button variant="outline" size="sm" className="gap-2">
+                <Upload size={16} /> Import CSV
+              </Button>
+            </div>
+            <Button size="sm" className="gap-2" onClick={() => setIsAddOpen(true)}>
+              <Plus size={16} /> Add Product
+            </Button>
+          </div>
         </div>
 
         {/* Modals */}

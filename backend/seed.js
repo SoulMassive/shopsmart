@@ -43,14 +43,14 @@ const users = [
         name: 'Retail Store 1',
         email: 'store1@shopsmart.com',
         password: 'Store@123',
-        role: 'user',
+        role: 'retailOutlet',
         isActive: true,
     },
     {
         name: 'Retail Store 2',
         email: 'store2@shopsmart.com',
         password: 'Store@123',
-        role: 'user',
+        role: 'retailOutlet',
         isActive: true,
     },
 ];
