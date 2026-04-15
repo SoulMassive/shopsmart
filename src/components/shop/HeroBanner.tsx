@@ -34,19 +34,6 @@ const HeroBanner = () => {
                     </button>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.15 }}
-                    className="hidden md:flex items-center justify-center rounded-2xl overflow-hidden"
-                >
-                    <img
-                        src="/logo-shopsmart.png"
-                        alt="ShopsMart"
-                        className="h-32 w-auto object-contain opacity-90"
-                        style={{ filter: "brightness(0) invert(1)" }}
-                    />
-                </motion.div>
             </div>
         </section>
     );

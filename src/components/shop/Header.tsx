@@ -11,7 +11,6 @@ const Header = () => {
     const { theme } = useBrandTheme();
     const navigate = useNavigate();
     const { totalItems } = useCart();
-    const [search, setSearch] = useState("");
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleDashboard = () => {
@@ -28,26 +27,14 @@ const Header = () => {
                 <Link to="/" className="flex-shrink-0">
                     <img
                         src="/logo-shopsmart.png"
-                        alt="ShopsMart"
-                        style={{ height: "156px", width: "auto" }}
+                        alt="ShopSmart"
+                        style={{ height: "48px", width: "auto" }}
                         className="object-contain"
                     />
                 </Link>
 
-                {/* Search bar */}
-                <div className="flex-1 max-w-xl hidden sm:flex items-center bg-gray-100 rounded-xl px-4 py-2 gap-2 border border-gray-200 focus-within:border-gray-400 transition-colors">
-                    <Search className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <input
-                        type="text"
-                        placeholder="Search products or brands..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="bg-transparent outline-none text-sm w-full text-gray-700 placeholder-gray-400"
-                    />
-                </div>
-
                 {/* Right actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-auto">
                     {user ? (
                         <>
                             <button
@@ -99,17 +86,6 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* Mobile search */}
-            <div className="sm:hidden px-4 pb-2">
-                <div className="flex items-center bg-gray-100 rounded-xl px-4 py-2 gap-2 border border-gray-200">
-                    <Search className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <input
-                        type="text"
-                        placeholder="Search products or brands..."
-                        className="bg-transparent outline-none text-sm w-full text-gray-700 placeholder-gray-400"
-                    />
-                </div>
-            </div>
         </header>
     );
 };

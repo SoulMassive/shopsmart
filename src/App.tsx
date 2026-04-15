@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import BulkOrder from "./pages/BulkOrder";
 
 // Auth pages
 import Login from "./pages/auth/Login";
@@ -27,6 +28,7 @@ import UserProfile from "./pages/admin/UserProfile";
 import AdminCart from "./pages/admin/AdminCart";
 import AdminBulkData from "./pages/admin/AdminBulkData";
 import AdminBulkHistory from "./pages/admin/AdminBulkHistory";
+import AdminBulkOrders from "./pages/admin/AdminBulkOrders";
 
 // Retail pages
 import RetailDashboard from "./pages/retail/RetailDashboard";
@@ -61,6 +63,7 @@ const App = () => (
                 {/* Public category & product detail pages */}
                 <Route path="/category/:brand" element={<CategoryPage />} />
                 <Route path="/product/:id" element={<ProductDetailPage />} />
+                <Route path="/bulk-order" element={<BulkOrder />} />
 
                 {/* Admin */}
                 <Route
@@ -75,6 +78,7 @@ const App = () => (
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="bulk" element={<AdminBulkData />} />
                         <Route path="bulk-history" element={<AdminBulkHistory />} />
+                        <Route path="bulk-orders" element={<AdminBulkOrders />} />
                         <Route path="tracking" element={<AdminTracking />} />
                         <Route path="reports" element={<AdminReports />} />
                         <Route path="cart" element={<AdminCart />} />

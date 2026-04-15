@@ -6,6 +6,18 @@ import { useBrandTheme } from "@/context/BrandThemeContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
+interface ProductVariant {
+    _id: string;
+    weight: number;
+    weightInKg: number;
+    price: number;
+    originalPrice: number;
+    discountedPrice: number;
+    discountPercentage: number;
+    stock: number;
+    label?: string;
+}
+
 interface ProductCardProps {
     product: {
         _id: string;
@@ -19,64 +31,73 @@ interface ProductCardProps {
         weight?: number;
         weightInKg?: number;
         images?: string[];
+        variants?: ProductVariant[];
     };
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
     const { theme } = useBrandTheme();
     const navigate = useNavigate();
-    const { addToCart, increaseQuantity, decreaseQuantity } = useCart();
-    const [qty, setQty] = useState(0);
+    const { addToCart, increaseQuantity, decreaseQuantity, items } = useCart();
+    
+    // Select the first variant by default if variants exist, otherwise use the base product
+    const [selectedVariantId, setSelectedVariantId] = useState(
+        product.variants && product.variants.length > 0 ? product.variants[0]._id : product._id
+    );
+
+    const activeProduct = product.variants 
+        ? product.variants.find(v => v._id === selectedVariantId) || product.variants[0]
+        : product;
+
+    // Get qty from cart
+    const cartItem = items.find(item => item.productId === activeProduct._id);
+    const qty = cartItem ? cartItem.quantity : 0;
 
     const handleAdd = (e: React.MouseEvent) => {
         e.stopPropagation(); // prevent card navigation
         addToCart({
-            productId: product._id,
-            name: product.name,
-            price: product.discountedPrice,
+            productId: activeProduct._id,
+            name: product.variants ? `${product.name} - ${(activeProduct as ProductVariant).label}` : product.name,
+            price: activeProduct.discountedPrice,
             image: product.images?.[0],
-            weight: product.weight,
-            weightInKg: product.weightInKg,
+            weight: activeProduct.weight,
+            weightInKg: activeProduct.weightInKg,
         });
-        toast.success(`${product.name} added to cart!`);
-        setQty(1);
+        toast.success(`Item added to cart!`);
     };
 
     const handleIncrease = (e: React.MouseEvent) => {
         e.stopPropagation();
-        increaseQuantity(product._id);
-        setQty((q) => q + 1);
+        increaseQuantity(activeProduct._id);
     };
 
     const handleDecrease = (e: React.MouseEvent) => {
         e.stopPropagation();
-        decreaseQuantity(product._id);
-        setQty((q) => Math.max(0, q - 1));
+        decreaseQuantity(activeProduct._id);
     };
 
     return (
         <motion.div
             whileHover={{ y: -3, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col cursor-pointer"
-            style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+            className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col cursor-pointer shadow-sm"
             onClick={() => navigate(`/product/${product._id}`)}
         >
-            {/* Product image */}
+            {/* Product image (Fixed 1:1 ratio) */}
             <div
-                className="w-full h-36 flex items-center justify-center overflow-hidden relative"
+                className="w-full aspect-square flex items-center justify-center overflow-hidden relative"
                 style={{ background: theme.bgLight }}
             >
                 {/* Discount Badge */}
-                {product.discountPercentage > 0 && (
+                {activeProduct.discountPercentage > 0 && (
                     <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded shadow-sm font-bold tracking-wide">
-                        {product.discountPercentage}% OFF
+                        {activeProduct.discountPercentage}% OFF
                     </div>
                 )}
                 {product.images?.[0] ? (
                     <img
                         src={product.images[0]}
                         alt={product.name}
-                        className="w-full h-full object-contain p-2"
+                        className="w-full h-full object-cover"
                     />
                 ) : (
                     <span className="text-5xl">🌾</span>
@@ -85,41 +106,59 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
             <div className="p-4 flex flex-col gap-3 flex-1">
                 <div>
-                    <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
+                    <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2" title={product.name}>
                         {product.name}
                     </h3>
-                    {product.weight && (
-                        <span className="text-[11px] text-gray-400 mt-0.5 block">
-                            {product.weight >= 1000 ? `${product.weight / 1000}kg` : `${product.weight}g`}
-                        </span>
+                    
+                    {/* Variants Dropdown or Weight Label */}
+                    {product.variants && product.variants.length > 0 ? (
+                        <select 
+                            className="mt-2 w-full text-xs border border-gray-200 rounded p-1 focus:outline-none focus:border-gray-400"
+                            value={selectedVariantId}
+                            onChange={(e) => {
+                                e.stopPropagation();
+                                setSelectedVariantId(e.target.value);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {product.variants.map((v) => (
+                                <option key={v._id} value={v._id}>{v.label}</option>
+                            ))}
+                        </select>
+                    ) : (
+                        product.weight && (
+                            <span className="text-[11px] text-gray-400 mt-0.5 block">
+                                {product.weight >= 1000 ? `${product.weight / 1000}kg` : `${product.weight}g`}
+                            </span>
+                        )
                     )}
                 </div>
 
-                <div className="flex items-center justify-between mt-auto">
+                <div className="flex items-center justify-between mt-auto pt-2">
                     <div className="flex flex-col">
-                        {product.discountPercentage > 0 && (
-                            <span className="text-gray-400 line-through text-xs font-medium">₹{product.originalPrice?.toLocaleString()}</span>
+                        {activeProduct.discountPercentage > 0 && (
+                            <span className="text-gray-400 line-through text-xs font-medium">₹{activeProduct.originalPrice?.toLocaleString()}</span>
                         )}
-                        <span className="text-lg font-bold text-green-600 leading-none mt-0.5">₹{product.discountedPrice?.toLocaleString()}</span>
+                        <span className="text-lg font-bold text-green-600 leading-none mt-0.5">₹{activeProduct.discountedPrice?.toLocaleString()}</span>
                     </div>
-                    <span className="text-[11px] text-gray-400">{product.stock} units</span>
+                    <span className="text-[11px] text-gray-400">{activeProduct.stock} units</span>
                 </div>
 
-                {/* Cart controls — stop propagation so clicks don't navigate */}
+                {/* Cart controls */}
                 {qty === 0 ? (
                     <motion.button
                         whileTap={{ scale: 0.96 }}
                         onClick={handleAdd}
-                        disabled={product.stock === 0}
-                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={activeProduct.stock === 0}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 mt-1 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ background: theme.gradient }}
                     >
                         <ShoppingCart className="h-4 w-4" />
-                        {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                        {activeProduct.stock === 0 ? "Out of Stock" : "Add"}
                     </motion.button>
                 ) : (
                     <div
-                        className="flex items-center justify-between rounded-xl overflow-hidden border"
+                        className="flex items-center justify-between rounded-xl overflow-hidden border mt-1"
                         style={{ borderColor: theme.primary }}
                         onClick={(e) => e.stopPropagation()}
                     >

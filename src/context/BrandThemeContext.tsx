@@ -22,7 +22,7 @@ export const brandThemes: Record<BrandKey, BrandTheme> = {
         gradient: "linear-gradient(135deg, #1B5E20, #2E7D32)",
         buttonClass: "bg-green-800 hover:bg-green-700 text-white",
         bgLight: "#f0fdf4",
-        name: "ShopsMart",
+        name: "ShopSmart",
         slug: "",
         description: "",
     },
@@ -35,7 +35,7 @@ export const brandThemes: Record<BrandKey, BrandTheme> = {
         bgLight: "#fdf8ee",
         name: "Jaya Janardhana",
         slug: "jaya-janardhana",
-        description: "Premium quality grains, oils, and staple foods",
+        description: "Authentic Pooja Essentials & Sacred Items",
     },
     ssr: {
         primary: "#1B5E20",
@@ -46,7 +46,7 @@ export const brandThemes: Record<BrandKey, BrandTheme> = {
         bgLight: "#f0fdf4",
         name: "SSR",
         slug: "ssr",
-        description: "High-quality flour, atta, and grain-based essentials",
+        description: "Authentic Pooja Essentials & Sacred Items",
     },
     millets: {
         primary: "#424242",

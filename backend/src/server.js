@@ -1,39 +1,52 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
-require('dotenv').config();
 
 const app = express();
 
 // Connect to MongoDB
 connectDB();
 
-// Middleware
+// ─── CORS ────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:8080',
     'https://shopsmart-hazel.vercel.app',
     process.env.CLIENT_URL,
-].filter(Boolean).map(o => o.replace(/\/$/, '')); // Remove trailing slashes
+].filter(Boolean).map(o => o.replace(/\/$/, ''));
 
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        
-        const normalizedOrigin = origin.replace(/\/$/, '');
-        if (allowedOrigins.includes(normalizedOrigin)) {
-            callback(null, true);
-        } else {
-            console.error(`[CORS] Rejected: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-            // In development, maybe allow it but log it? No, stay strict but informative.
-            callback(new Error(`CORS blocked for origin: ${origin}`));
+// Always set CORS headers — even on errors — so the browser can read the response
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const normalizedOrigin = origin ? origin.replace(/\/$/, '') : '';
+
+    if (!origin || allowedOrigins.includes(normalizedOrigin)) {
+        // Allowed origin (or same-origin / server-to-server request)
+        if (origin) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
         }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-}));
+    } else {
+        // Still set the header so the browser can read the error body
+        console.error(`[CORS] Rejected: ${origin}`);
+        res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]); // safe fallback
+    }
+
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type,Authorization,X-Requested-With,Accept'
+    );
+
+    // Handle preflight immediately
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+
+    next();
+});
+// ─────────────────────────────────────────────────────────────────────────────
 
 app.use(express.json({ limit: '256mb' }));
 app.use(express.urlencoded({ extended: false, limit: '256mb' }));
@@ -53,6 +66,7 @@ app.use('/api/admin/analytics', require('./routes/analytics.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
 app.use('/api/bulk', require('./routes/bulk.routes'));
+app.use('/api/bulk-order', require('./routes/bulk-order.routes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -11,14 +11,19 @@ const ShopFooter = () => {
                 <div>
                     <img
                         src="/logo-shopsmart.png"
-                        alt="ShopsMart"
+                        alt="ShopSmart"
                         style={{ height: "70px", width: "auto" }}
                         className="object-contain mb-3"
                     />
                     <p className="text-sm text-gray-500">
                         B2B retail ordering platform. Order from trusted distributors directly.
                     </p>
-                    <p className="text-sm text-gray-400 mt-2">📧 support@shopsmart.in</p>
+                    <div className="text-sm text-gray-400 mt-4 space-y-2">
+                        <p>📍 123 Tech Avenue, Bangalore, India</p>
+                        <p>📧 <a href="mailto:support@shopsmart.in" className="hover:text-gray-800 transition-colors">support@shopsmart.in</a></p>
+                        <p>📞 <a href="tel:+919876543210" className="hover:text-gray-800 transition-colors">+91 98765 43210</a></p>
+                        <p>💬 <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="hover:text-[#25D366] transition-colors">WhatsApp Us</a></p>
+                    </div>
                 </div>
 
                 {/* Quick links */}
@@ -67,7 +72,7 @@ const ShopFooter = () => {
             </div>
 
             <div className="mt-8 border-t border-gray-200 pt-6 text-center text-xs text-gray-400">
-                © {new Date().getFullYear()} ShopsMart. All rights reserved.
+                © {new Date().getFullYear()} ShopSmart. All rights reserved.
             </div>
         </footer>
     );

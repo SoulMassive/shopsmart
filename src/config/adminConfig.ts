@@ -18,6 +18,7 @@ export const adminConfig: RoleConfig = {
     { title: "Users", url: "/admin/users", icon: Users },
     { title: "Bulk Manager", url: "/admin/bulk", icon: Database },
     { title: "Bulk History", url: "/admin/bulk-history", icon: History },
+    { title: "Bulk Orders", url: "/admin/bulk-orders", icon: Package },
     { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
     { title: "Products", url: "/admin/products", icon: Package },
     { title: "GPS Tracking", url: "/admin/tracking", icon: MapPin },

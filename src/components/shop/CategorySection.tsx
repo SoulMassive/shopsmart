@@ -3,10 +3,10 @@ import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBrandTheme, brandThemes, BrandKey } from "@/context/BrandThemeContext";
 
-const categoryMeta: { key: BrandKey; slug: string; emoji: string }[] = [
-    { key: "jaya", slug: "jaya-janardhana", emoji: "🌾" },
-    { key: "ssr", slug: "ssr", emoji: "🌾" },
-    { key: "millets", slug: "millets-pro", emoji: "🌿" },
+const categoryMeta: { key: BrandKey; slug: string; logo: string }[] = [
+    { key: "jaya", slug: "jaya-janardhana", logo: "/logo-JJR.png" },
+    { key: "ssr", slug: "ssr", logo: "/logo-SRR.png" },
+    { key: "millets", slug: "millets-pro", logo: "/logo-milletpro.png" },
 ];
 
 const CategorySection = () => {
@@ -42,10 +42,10 @@ const CategorySection = () => {
                                 {/* Emoji + Name */}
                                 <div className="flex items-center gap-3">
                                     <div
-                                        className="h-14 w-14 rounded-xl flex items-center justify-center text-3xl"
+                                        className="h-14 w-14 rounded-xl flex items-center justify-center p-2"
                                         style={{ background: theme.bgLight }}
                                     >
-                                        {item.emoji}
+                                        <img src={item.logo} alt={theme.name} className="w-full h-full object-contain" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg" style={{ color: theme.accent }}>
