@@ -92,3 +92,9 @@ coverage/
 .vercel/
 .netlify/
 *.pem
+
+# ── Project Specific ──────────────────────────────────────────────────────────
+.expo/
+backend/dump.js
+backend/test_api.js
+backend/test_api_cats.js

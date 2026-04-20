@@ -2,8 +2,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
 const Outlet = require('../models/Outlet.model');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'shopsmart-dev-secret';
+
 const generateToken = (id) =>
-    jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
 
 // @desc    Register a new user (and optionally create their Outlet record)
 // @route   POST /api/auth/register

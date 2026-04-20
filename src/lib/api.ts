@@ -1,7 +1,17 @@
 import axios from 'axios';
 
+const inferApiUrlFromBrowserHost = () => {
+    if (typeof window === 'undefined') {
+        return 'http://localhost:5000/api';
+    }
+
+    const { protocol, hostname } = window.location;
+    const apiProtocol = protocol === 'https:' ? 'https:' : 'http:';
+    return `${apiProtocol}//${hostname}:5000/api`;
+};
+
 const getBaseURL = () => {
-    let url = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    let url = import.meta.env.VITE_API_URL || inferApiUrlFromBrowserHost();
     // Ensure the URL ends with /api to match backend routes
     if (!url.endsWith('/api') && !url.includes('/api/')) {
         url = url.endsWith('/') ? `${url}api` : `${url}/api`;

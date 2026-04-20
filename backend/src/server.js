@@ -16,35 +16,36 @@ const allowedOrigins = [
     process.env.CLIENT_URL,
 ].filter(Boolean).map(o => o.replace(/\/$/, ''));
 
-// Always set CORS headers — even on errors — so the browser can read the response
+const isAllowedDevLanOrigin = (origin) => {
+    if (process.env.NODE_ENV === 'production') return false;
+    // Allow local network frontend URLs in development, e.g. http://192.168.x.x:8080
+    return /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})(:\d+)?$/i.test(origin);
+};
+
+// CORS configuration
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     const normalizedOrigin = origin ? origin.replace(/\/$/, '') : '';
 
-    if (!origin || allowedOrigins.includes(normalizedOrigin)) {
-        // Allowed origin (or same-origin / server-to-server request)
+    if (!origin || allowedOrigins.includes(normalizedOrigin) || isAllowedDevLanOrigin(origin)) {
         if (origin) {
             res.setHeader('Access-Control-Allow-Origin', origin);
         }
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+        res.setHeader(
+            'Access-Control-Allow-Headers',
+            'Content-Type,Authorization,X-Requested-With,Accept'
+        );
+
+        if (req.method === 'OPTIONS') {
+            return res.sendStatus(204);
+        }
+        next();
     } else {
-        // Still set the header so the browser can read the error body
         console.error(`[CORS] Rejected: ${origin}`);
-        res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]); // safe fallback
+        res.status(403).json({ message: 'CORS policy blocked this request' });
     }
-
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'Content-Type,Authorization,X-Requested-With,Accept'
-    );
-
-    // Handle preflight immediately
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(204);
-    }
-
-    next();
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -82,9 +83,12 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
     // Ensure CORS headers are present even on errors
     const origin = req.headers.origin;
-    if (origin && allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+    if (origin) {
+        const normalizedOrigin = origin.replace(/\/$/, '');
+        if (allowedOrigins.includes(normalizedOrigin) || isAllowedDevLanOrigin(normalizedOrigin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
+        }
     }
 
     console.error(`[Error Handler] ${req.method} ${req.url}:`, err.stack || err);

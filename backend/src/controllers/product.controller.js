@@ -16,7 +16,15 @@ const getProducts = async (req, res) => {
         const query = { isActive: true, deletedAt: null };
 
         if (category) {
-            const brand = await Brand.findOne({ name: category, deletedAt: null });
+            // Find brand by name or slug (case-insensitive)
+            const brand = await Brand.findOne({ 
+                $or: [
+                    { name: { $regex: new RegExp(`^${category}$`, 'i') } },
+                    { slug: category.toLowerCase() }
+                ],
+                deletedAt: null 
+            });
+            
             if (brand) {
                 query.brandId = brand._id;
             } else {
@@ -29,6 +37,7 @@ const getProducts = async (req, res) => {
         const total = await Product.countDocuments(query);
         const products = await Product.find(query)
             .populate('brandId', 'name slug')
+            .populate('categoryId', 'name slug')
             .skip((page - 1) * limit)
             .limit(Number(limit))
             .sort({ createdAt: -1 });

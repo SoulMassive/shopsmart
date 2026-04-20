@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User.model');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'shopsmart-dev-secret';
+
 // Protect routes — requires valid JWT
 const protect = async (req, res, next) => {
     try {
@@ -14,7 +16,7 @@ const protect = async (req, res, next) => {
             return res.status(401).json({ message: 'Not authorized, no token provided' });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
         req.user = await User.findById(decoded.id).select('-password');
 
         if (!req.user) {
